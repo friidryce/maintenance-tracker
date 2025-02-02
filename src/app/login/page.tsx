@@ -1,14 +1,43 @@
 'use client';
 import { useState, FormEvent } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { signIn } from '@/auth';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [employeeId, setEmployeeId] = useState('');
-  const { login, error, isLoading } = useAuth();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    await login(employeeId);
+    setIsLoading(true);
+    setError('');
+
+    try {
+      console.log('Attempting login with:', employeeId); // Debug log
+      const result = await signIn('credentials', {
+        employeeId,
+        redirect: false,
+        callbackUrl: '/'
+      });
+
+      console.log('Login result:', result); // Debug log
+
+      if (result?.error) {
+        setError(`Login failed: ${result.error}`);
+      } else if (result?.ok) {
+        router.push('/');
+        router.refresh();
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } catch (error) {
+      console.error('Login error:', error); // Debug log
+      setError('An error occurred during login. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -22,6 +51,9 @@ export default function LoginPage() {
         )}
         <form onSubmit={handleLogin}>
           <div className="mb-4">
+            <label htmlFor="employeeId" className="block text-gray-700 mb-2">
+              Employee ID
+            </label>
             <input
               type="text"
               id="employeeId"

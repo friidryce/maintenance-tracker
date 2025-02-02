@@ -1,25 +1,17 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
 
-export function middleware(request: NextRequest) {
-  // TODO: change from cookie when API is implemented
-  const isLoggedIn = request.cookies.get('isLoggedIn')?.value
-  const isLoginPage = request.nextUrl.pathname === '/login'
+export default NextAuth(authConfig).auth;
 
-  // Redirect to login if not logged in and trying to access protected routes
-  if (!isLoggedIn && !isLoginPage) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  // Redirect to dashboard if logged in and trying to access login page
-  if (isLoggedIn && isLoginPage) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
-
-  return NextResponse.next()
-}
-
-// Configure which paths should be protected
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
-} 
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - login (login page)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
+}; 
