@@ -1,44 +1,28 @@
 'use client';
 import { useState, FormEvent } from 'react';
-import { signIn } from '@/auth';
-import { useRouter } from 'next/navigation';
+import { authenticate } from '@/auth/authenticate';
 
 export default function LoginPage() {
   const [employeeId, setEmployeeId] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
-  const handleLogin = async (e: FormEvent) => {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError(null);
 
     try {
-      console.log('Attempting login with:', employeeId); // Debug log
-      const result = await signIn('credentials', {
-        employeeId,
-        redirect: false,
-        callbackUrl: '/'
-      });
-
-      console.log('Login result:', result); // Debug log
-
-      if (result?.error) {
-        setError(`Login failed: ${result.error}`);
-      } else if (result?.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        setError('An unexpected error occurred');
+      const result = await authenticate(employeeId);
+      if (result) {
+        setError(result);
       }
     } catch (error) {
-      console.error('Login error:', error); // Debug log
-      setError('An error occurred during login. Please try again.');
+      setError('An unexpected error occurred.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <main className="min-h-screen flex items-center justify-center">
@@ -49,7 +33,7 @@ export default function LoginPage() {
             {error}
           </div>
         )}
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="employeeId" className="block text-gray-700 mb-2">
               Employee ID
