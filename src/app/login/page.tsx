@@ -1,20 +1,14 @@
 'use client';
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '../hooks/useAuth';
 
 export default function LoginPage() {
   const [employeeId, setEmployeeId] = useState('');
-  const router = useRouter();
+  const { login } = useAuth();
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    if (employeeId.trim()) {
-      // TODO: Use API call in the future
-      document.cookie = 'isLoggedIn=true; path=/';
-      document.cookie = `employeeId=${employeeId}; path=/`;
-      router.push('/');
-      router.refresh();
-    }
+    await login(employeeId);
   };
 
   return (
