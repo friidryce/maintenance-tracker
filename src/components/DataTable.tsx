@@ -11,6 +11,7 @@ import {
   getFilteredRowModel,
   ColumnFiltersState,
   getPaginationRowModel,
+  Row,
 } from '@tanstack/react-table'
 import {
   Table,
@@ -23,12 +24,44 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Equipment, MaintenanceRecord } from '@/interfaces/data'
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowUpDown, ArrowUp, ArrowDown, Calendar as CalendarIcon, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
   data: TData[]
   searchKey?: string
+}
+
+const getStatusColor = (row: Row<any>) => {
+  const status = row.getValue('status')
+  
+  switch (status?.toString().toLowerCase()) {
+    case 'operational':
+      return 'bg-green-50 dark:bg-green-950/30'
+    case 'down':
+      return 'bg-red-50 dark:bg-red-950/30'
+    case 'maintenance':
+      return 'bg-yellow-50 dark:bg-yellow-950/30'
+    case 'retired':
+      return 'bg-gray-50 dark:bg-gray-800/30'
+    default:
+      return ''
+  }
+}
+
+interface DateRange {
+  from: Date | undefined
+  to: Date | undefined
 }
 
 export function DataTable<TData>({
@@ -38,6 +71,10 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  })
 
   const table = useReactTable({
     data,
@@ -56,21 +93,119 @@ export function DataTable<TData>({
 
   return (
     <div>
-      {searchKey && (
-        <div className="flex items-center py-4">
-          <Input
-            placeholder="Search"
-            value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
-            onChange={(event) =>
-              table.getColumn(searchKey)?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-        </div>
-      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader className="border-b">
+            {/* Filter Row */}
+            <TableRow className="border-b">
+              {table.getAllColumns().map((column) => {
+                const columnId = column.id
+                return (
+                  <TableHead key={column.id} className="p-2">
+                    {columnId === 'name' || columnId === 'location' || 
+                     columnId === 'model' || columnId === 'serialNumber' ? (
+                      <Input
+                        placeholder={`Filter ${columnId}...`}
+                        value={(column.getFilterValue() as string) ?? ''}
+                        onChange={(event) =>
+                          column.setFilterValue(event.target.value)
+                        }
+                        className="w-full"
+                      />
+                    ) : columnId === 'department' ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-full">Department</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[200px]">
+                          {['Machining', 'Assembly', 'Packaging', 'Shipping'].map((department) => (
+                            <DropdownMenuCheckboxItem
+                              key={department}
+                              checked={column.getFilterValue() as string[] | undefined
+                                ? (column.getFilterValue() as string[])?.includes(department)
+                                : false
+                              }
+                              onCheckedChange={(checked) => {
+                                const currentValue = (column.getFilterValue() as string[]) || []
+                                const newValue = checked
+                                  ? [...currentValue, department]
+                                  : currentValue.filter((value) => value !== department)
+                                column.setFilterValue(newValue.length ? newValue : undefined)
+                              }}
+                            >
+                              {department}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : columnId === 'status' ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="w-full">Status</Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[200px]">
+                          {['Operational', 'Down', 'Maintenance', 'Retired'].map((status) => (
+                            <DropdownMenuCheckboxItem
+                              key={status}
+                              checked={column.getFilterValue() as string[] | undefined
+                                ? (column.getFilterValue() as string[])?.includes(status)
+                                : false
+                              }
+                              onCheckedChange={(checked) => {
+                                const currentValue = (column.getFilterValue() as string[]) || []
+                                const newValue = checked
+                                  ? [...currentValue, status]
+                                  : currentValue.filter((value) => value !== status)
+                                column.setFilterValue(newValue.length ? newValue : undefined)
+                              }}
+                            >
+                              {status}
+                            </DropdownMenuCheckboxItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : columnId === 'installDate' ? (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className="w-full justify-start text-left font-normal">
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dateRange?.from ? (
+                              dateRange.to ? (
+                                <>
+                                  {format(dateRange.from, "MM/dd/yy")} -{" "}
+                                  {format(dateRange.to, "MM/dd/yy")}
+                                </>
+                              ) : (
+                                format(dateRange.from, "MM/dd/yy")
+                              )
+                            ) : (
+                              <span>Date Range</span>
+                            )}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            initialFocus
+                            mode="range"
+                            selected={{ from: dateRange?.from, to: dateRange?.to }}
+                            onSelect={(range: any) => {
+                              setDateRange(range)
+                              if (range?.from && range?.to) {
+                                column.setFilterValue([range.from, range.to])
+                              } else {
+                                column.setFilterValue(undefined)
+                              }
+                            }}
+                            numberOfMonths={2}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    ) : null}
+                  </TableHead>
+                )
+              })}
+            </TableRow>
+            {/* Header Row */}
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="border-b">
                 {headerGroup.headers.map((header) => {
@@ -111,7 +246,10 @@ export function DataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="border-b"
+                  className={cn(
+                    'border-b transition-colors',
+                    getStatusColor(row)
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className="border-r last:border-r-0">
@@ -163,27 +301,37 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
-    sortingFn: 'text'
+    sortingFn: 'text',
+    filterFn: 'includesString'
   },
   {
     accessorKey: 'location',
     header: 'Location',
-    sortingFn: 'text'
+    sortingFn: 'text',
+    filterFn: 'includesString'
   },
   {
     accessorKey: 'department',
     header: 'Department',
-    sortingFn: 'text'
+    sortingFn: 'text',
+    filterFn: (row, id, value) => {
+      const departments = value as string[]
+      if (!departments?.length) return true
+      const rowValue = row.getValue(id) as string
+      return departments.includes(rowValue)
+    }
   },
   {
     accessorKey: 'model',
     header: 'Model',
-    sortingFn: 'text'
+    sortingFn: 'text',
+    filterFn: 'includesString'
   },
   {
     accessorKey: 'serialNumber',
     header: 'Serial Number',
-    sortingFn: 'text'
+    sortingFn: 'text',
+    filterFn: 'includesString'
   },
   {
     accessorKey: 'installDate',
@@ -192,12 +340,26 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
       const date = row.getValue('installDate') as Date
       return date.toLocaleDateString()
     },
-    sortingFn: 'datetime'
+    sortingFn: 'datetime',
+    filterFn: (row, id, value) => {
+      const [start, end] = value as [Date, Date]
+      const cellDate = row.getValue(id) as Date
+      
+      if (!start || !end) return true
+      const date = new Date(cellDate)
+      return date >= start && date <= end
+    }
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    sortingFn: 'text'
+    sortingFn: 'text',
+    filterFn: (row, id, value) => {
+      const statuses = value as string[]
+      if (!statuses?.length) return true
+      const rowValue = row.getValue(id) as string
+      return statuses.includes(rowValue)
+    }
   },
 ]
 
