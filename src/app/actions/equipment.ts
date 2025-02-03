@@ -1,7 +1,10 @@
 import { equipmentSchema } from '@/schemas/forms';
+import { Equipment } from '@/interfaces/data';
 
-export async function submitEquipment(formData: FormData) {
+export async function submitEquipment(formData: FormData): Promise<Equipment> {
+  const id = crypto.randomUUID();
   const rawData = {
+    id,
     name: formData.get('name'),
     location: formData.get('location'),
     department: formData.get('department'),
@@ -20,6 +23,7 @@ export async function submitEquipment(formData: FormData) {
   try {
     // TODO: Save to database
     console.log('Saving equipment:', result.data);
+    return result.data as Equipment;
   } catch (error) {
     throw new Error('Failed to save equipment');
   }
