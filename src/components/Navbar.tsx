@@ -22,7 +22,7 @@ export default async function Navbar() {
     <SidebarProvider defaultOpen>
       <Sidebar>
         <SidebarHeader>
-          <Link href="/" className="block">
+          <Link href="/dashboard" className="block">
             <h1 className="text-2xl font-bold">Maintenance Tracker</h1>
             {session?.user?.id && (
               <p className="text-sm text-muted-foreground mt-1">

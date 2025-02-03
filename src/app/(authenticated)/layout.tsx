@@ -6,11 +6,13 @@ export default function NavbarLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <Navbar />
-      <main className="min-h-screen md:pl-64">
+    <div className="flex min-h-screen">
+      <div className="fixed top-0 left-0">
+        <Navbar />
+      </div>
+      <div className="flex-1 md:ml-64">
         {children}
-      </main>
-    </>
+      </div>
+    </div>
   );
 } 
