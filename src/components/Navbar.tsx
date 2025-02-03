@@ -15,9 +15,9 @@ export default async function Navbar() {
           <span className="text-xl font-bold text-green-600 break-words leading-tight block">
             Maintenance Tracker
           </span>
-          {session?.user?.employeeId && (
+          {session?.user?.id && (
             <span className="text-sm text-gray-600 mt-1 block">
-              ID: {session.user.employeeId}
+              Employee ID: {session.user.id}
             </span>
           )}
         </Link>

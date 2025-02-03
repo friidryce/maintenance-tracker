@@ -1,36 +1,18 @@
 'use client';
-import { useState, FormEvent } from 'react';
-import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { serverSignIn } from '@/auth/authenticate';
 
 export default function LoginPage() {
   const [employeeId, setEmployeeId] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
-
     try {
-      const result = await signIn('credentials', {
-        employeeId,
-        callbackUrl,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError(result.error);
-      } else if (result?.url) {
-        window.location.href = result.url;
-      }
+      serverSignIn(employeeId);
     } catch (error) {
-      setError('An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
+      setError('Failed to login');
     }
   }
 
@@ -56,15 +38,13 @@ export default function LoginPage() {
               className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter your employee ID"
               required
-              disabled={isLoading}
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
-            disabled={isLoading}
+            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            Login
           </button>
         </form>
       </div>
