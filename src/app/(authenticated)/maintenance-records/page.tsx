@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import MaintenanceForm from '@/components/forms/MaintenanceForm';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { PlusCircle } from "lucide-react";
 
 export default function MaintenanceRecordsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,21 +17,27 @@ export default function MaintenanceRecordsPage() {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Maintenance Records</h1>
-        <button
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Maintenance Records
+        </h1>
+        <Button 
           onClick={() => setIsModalOpen(true)}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+          className="gap-2"
         >
+          <PlusCircle className="h-4 w-4" />
           Create Record
-        </button>
+        </Button>
       </div>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="p-4 border-b dark:border-gray-700">
-          <p className="text-gray-600 dark:text-gray-400">No maintenance records found</p>
-        </div>
-      </div>
+
+      <Card>
+        <CardContent className="p-6">
+          <p className="text-sm text-muted-foreground">
+            No maintenance records found
+          </p>
+        </CardContent>
+      </Card>
 
       <Modal
         isOpen={isModalOpen}

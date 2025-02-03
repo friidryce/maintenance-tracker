@@ -3,7 +3,6 @@
 import { useFormStatus } from 'react-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,37 +11,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { submitEquipment } from '@/app/actions/equipment';
+import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
 
 const departments = ['Machining', 'Assembly', 'Packaging', 'Shipping'] as const;
 const statuses = ['Operational', 'Down', 'Maintenance', 'Retired'] as const;
-
-function RequiredLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
-  return (
-    <Label htmlFor={htmlFor}>
-      {children}
-      <span className="text-red-500 ml-1" aria-label="required">*</span>
-    </Label>
-  );
-}
 
 export default function EquipmentForm() {
   const { pending } = useFormStatus();
 
   return (
-    <form action={submitEquipment} className="space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            All fields marked with an asterisk (<span className="text-red-500">*</span>) are required.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
+    <FormContainer action={submitEquipment}>
+      <FormField>
         <RequiredLabel htmlFor="name">Name</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           A unique identifier for the equipment. Must be at least 3 characters long.
-        </p>
+        </FormDescription>
         <Input
           id="name"
           name="name"
@@ -50,26 +33,26 @@ export default function EquipmentForm() {
           minLength={3}
           placeholder="e.g., CNC Machine 01"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="location">Location</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Physical location of the equipment in the facility.
-        </p>
+        </FormDescription>
         <Input
           id="location"
           name="location"
           required
           placeholder="e.g., Building A, Room 101"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="department">Department</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Department responsible for this equipment. Select from the available options.
-        </p>
+        <FormDescription>
+          Department responsible for this equipment.
+        </FormDescription>
         <Select name="department" defaultValue="Machining" required>
           <SelectTrigger>
             <SelectValue placeholder="Select department" />
@@ -80,26 +63,26 @@ export default function EquipmentForm() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="model">Model</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Equipment model number or name as specified by the manufacturer.
-        </p>
+        </FormDescription>
         <Input
           id="model"
           name="model"
           required
           placeholder="e.g., XYZ-1000"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="serialNumber">Serial Number</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Unique serial number from the manufacturer. Must contain only letters and numbers.
-        </p>
+        </FormDescription>
         <Input
           id="serialNumber"
           name="serialNumber"
@@ -107,13 +90,13 @@ export default function EquipmentForm() {
           pattern="[a-zA-Z0-9]+"
           placeholder="e.g., ABC123XYZ"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="installDate">Install Date</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Date when the equipment was installed. Cannot be a future date.
-        </p>
+        </FormDescription>
         <Input
           type="date"
           id="installDate"
@@ -121,13 +104,13 @@ export default function EquipmentForm() {
           required
           max={new Date().toISOString().split('T')[0]}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="status">Status</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Current operational status of the equipment. Select from the available options.
-        </p>
+        <FormDescription>
+          Current operational status of the equipment.
+        </FormDescription>
         <Select name="status" defaultValue="Operational" required>
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
@@ -138,11 +121,11 @@ export default function EquipmentForm() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? 'Saving...' : 'Save Equipment'}
       </Button>
-    </form>
+    </FormContainer>
   );
 } 

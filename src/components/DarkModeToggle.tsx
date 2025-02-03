@@ -2,65 +2,45 @@
 
 import { useState, useEffect } from 'react';
 import { FaMoon, FaSun } from 'react-icons/fa';
+import { SidebarMenuItem, SidebarMenuButton } from '@/components/ui/sidebar';
 
 export default function DarkModeToggle() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check initial theme from system preference if no saved preference
-    const savedTheme = localStorage.getItem('theme');
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    const theme = savedTheme || (systemTheme ? 'dark' : 'light');
-    setIsDark(theme === 'dark');
-    
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+    // Check if we're in the browser
+    if (typeof window !== 'undefined') {
+      // Check if dark mode is already active
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      setIsDark(isDarkMode);
+
+      // Set up system preference listener
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e: MediaQueryListEvent) => {
+        const shouldBeDark = localStorage.getItem('theme') === 'dark' || 
+          (!localStorage.getItem('theme') && e.matches);
+        setIsDark(shouldBeDark);
+        document.documentElement.classList.toggle('dark', shouldBeDark);
+      };
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
     }
   }, []);
 
   const toggleDarkMode = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    }
-    setIsDark(!isDark);
+    const newIsDark = !isDark;
+    setIsDark(newIsDark);
+    document.documentElement.classList.toggle('dark', newIsDark);
+    localStorage.setItem('theme', newIsDark ? 'dark' : 'light');
   };
 
   return (
-    <button
-      onClick={toggleDarkMode}
-      className="flex items-center px-6 py-3 text-base font-medium text-gray-600 dark:text-gray-300 transition-colors duration-200 mx-2"
-      aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-    >
-      <div className="relative inline-flex items-center cursor-pointer">
-        <div 
-          className={`
-            w-14 h-7 rounded-full transition-colors duration-200 ease-in-out
-            ${isDark ? 'bg-blue-600' : 'bg-gray-200'}
-          `}
-        >
-          <div 
-            className={`
-              absolute top-1 left-1 w-5 h-5 rounded-full transition-transform duration-200 ease-in-out
-              ${isDark ? 'translate-x-7 bg-white' : 'translate-x-0 bg-white'}
-              flex items-center justify-center text-xs
-            `}
-          >
-            {isDark ? (
-              <FaMoon className="text-blue-600" size={12} />
-            ) : (
-              <FaSun className="text-yellow-500" size={12} />
-            )}
-          </div>
-        </div>
-        <span className="ml-3">
-          {isDark ? 'Dark' : 'Light'}
-        </span>
-      </div>
-    </button>
+    <SidebarMenuItem>
+      <SidebarMenuButton size="lg" variant="default" onClick={toggleDarkMode}>
+        {isDark ? <FaSun className="h-5 w-5" /> : <FaMoon className="h-5 w-5" />}
+        <span className="text-base">{isDark ? 'Light' : 'Dark'} Mode</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 } 

@@ -3,7 +3,6 @@
 import { useFormStatus } from 'react-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -13,19 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { submitMaintenance } from '@/app/actions/maintenance';
+import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
 
 const maintenanceTypes = ['Preventive', 'Corrective', 'Inspection'] as const;
 const priorities = ['Low', 'Medium', 'High', 'Critical'] as const;
 const completionStatuses = ['Scheduled', 'In Progress', 'Completed', 'Delayed'] as const;
-
-function RequiredLabel({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
-  return (
-    <Label htmlFor={htmlFor}>
-      {children}
-      <span className="text-red-500 ml-1" aria-label="required">*</span>
-    </Label>
-  );
-}
 
 interface MaintenanceFormProps {
   equipmentOptions: Array<{ id: string; name: string; }>;
@@ -35,20 +26,12 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
   const { pending } = useFormStatus();
 
   return (
-    <form action={submitMaintenance} className="space-y-6">
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            All fields marked with an asterisk (<span className="text-red-500">*</span>) are required.
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
+    <FormContainer action={submitMaintenance}>
+      <FormField>
         <RequiredLabel htmlFor="equipmentId">Equipment</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Select the equipment that requires maintenance.
-        </p>
+        </FormDescription>
         <Select name="equipmentId" required>
           <SelectTrigger>
             <SelectValue placeholder="Select equipment" />
@@ -61,13 +44,13 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="date">Date</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Date when the maintenance was or will be performed. Cannot be a past date.
-        </p>
+        </FormDescription>
         <Input
           type="date"
           id="date"
@@ -75,13 +58,13 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
           required
           min={new Date().toISOString().split('T')[0]}
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="type">Maintenance Type</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Type of maintenance to be performed.
-        </p>
+        </FormDescription>
         <Select name="type" defaultValue="Preventive" required>
           <SelectTrigger>
             <SelectValue placeholder="Select type" />
@@ -92,26 +75,26 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="technician">Technician</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Name of the technician responsible for the maintenance.
-        </p>
+        </FormDescription>
         <Input
           id="technician"
           name="technician"
           required
           placeholder="e.g., John Smith"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="hoursSpent">Hours Spent</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Number of hours spent on maintenance. Must be a positive number.
-        </p>
+        </FormDescription>
         <Input
           type="number"
           id="hoursSpent"
@@ -121,13 +104,13 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
           step="0.5"
           placeholder="e.g., 2.5"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="description">Description</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Detailed description of the maintenance work performed or to be performed.
-        </p>
+        </FormDescription>
         <Textarea
           id="description"
           name="description"
@@ -135,13 +118,13 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
           placeholder="Describe the maintenance work in detail..."
           className="min-h-[100px]"
         />
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="priority">Priority</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Priority level of the maintenance task.
-        </p>
+        </FormDescription>
         <Select name="priority" defaultValue="Medium" required>
           <SelectTrigger>
             <SelectValue placeholder="Select priority" />
@@ -152,13 +135,13 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
-      <div className="space-y-2">
+      <FormField>
         <RequiredLabel htmlFor="completionStatus">Completion Status</RequiredLabel>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <FormDescription>
           Current status of the maintenance task.
-        </p>
+        </FormDescription>
         <Select name="completionStatus" defaultValue="Scheduled" required>
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
@@ -169,11 +152,11 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </FormField>
 
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? 'Saving...' : 'Save Maintenance Record'}
       </Button>
-    </form>
+    </FormContainer>
   );
 } 
