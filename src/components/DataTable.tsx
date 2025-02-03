@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Equipment, MaintenanceRecord } from '@/interfaces/data'
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
@@ -69,18 +70,35 @@ export function DataTable<TData>({
       )}
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="border-b">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b">
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
+                      {header.isPlaceholder ? null : (
+                        <div
+                          className={`flex items-center justify-between ${
+                            header.column.getCanSort() ? 'cursor-pointer select-none' : ''
+                          }`}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
+                          <div className="ml-2">
+                            {{
+                              asc: <ArrowUp className="h-4 w-4" />,
+                              desc: <ArrowDown className="h-4 w-4" />
+                            }[header.column.getIsSorted() as string] ?? (
+                              header.column.getCanSort() && (
+                                <ArrowUpDown className="h-4 w-4" />
+                              )
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </TableHead>
                   )
                 })}
@@ -93,9 +111,10 @@ export function DataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className="border-b"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="border-r last:border-r-0">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -144,22 +163,27 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'location',
     header: 'Location',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'department',
     header: 'Department',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'model',
     header: 'Model',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'serialNumber',
     header: 'Serial Number',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'installDate',
@@ -168,10 +192,12 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
       const date = row.getValue('installDate') as Date
       return date.toLocaleDateString()
     },
+    sortingFn: 'datetime'
   },
   {
     accessorKey: 'status',
     header: 'Status',
+    sortingFn: 'text'
   },
 ]
 
@@ -184,29 +210,36 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord>[] = [
       const date = row.getValue('date') as Date
       return date.toLocaleDateString()
     },
+    sortingFn: 'datetime'
   },
   {
     accessorKey: 'type',
     header: 'Type',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'technician',
     header: 'Technician',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'hoursSpent',
     header: 'Hours Spent',
+    sortingFn: 'alphanumeric'
   },
   {
     accessorKey: 'description',
     header: 'Description',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'priority',
     header: 'Priority',
+    sortingFn: 'text'
   },
   {
     accessorKey: 'completionStatus',
     header: 'Status',
+    sortingFn: 'text'
   },
 ] 
