@@ -3,7 +3,7 @@
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 
-export async function authenticate(employeeId: string) {
+export async function serverSignIn(employeeId: string) {
   try {
     await signIn('credentials', { 
       employeeId,

@@ -1,11 +1,14 @@
 'use client';
 import { useState, FormEvent } from 'react';
-import { authenticate } from '@/auth/authenticate';
+import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
   const [employeeId, setEmployeeId] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -13,9 +16,16 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const result = await authenticate(employeeId);
-      if (result) {
-        setError(result);
+      const result = await signIn('credentials', {
+        employeeId,
+        callbackUrl,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else if (result?.url) {
+        window.location.href = result.url;
       }
     } catch (error) {
       setError('An unexpected error occurred.');
