@@ -5,7 +5,8 @@ import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Modal from '@/components/ui/Modal';
 import EquipmentForm from '@/components/forms/EquipmentForm';
-import { DataTable, equipmentColumns } from '@/components/DataTable';
+import { DataTable } from '@/components/DataTable';
+import { equipmentColumns } from '@/components/table/columns';
 import { Equipment } from '@/interfaces/data';
 
 // Temporary mock data - replace with actual API call later
@@ -58,7 +59,6 @@ export default function EquipmentPage() {
       <DataTable 
         columns={equipmentColumns} 
         data={equipment} 
-        searchKey="name"
       />
 
       <Modal
