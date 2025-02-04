@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Equipment {
+  id           String   @id @default(uuid()) @db.VarChar(255)
+  name         String   @db.VarChar(255)
+  location     String   @db.VarChar(255)
+  department   String   @db.VarChar(50)
+  model        String   @db.VarChar(255)
+  serialNumber String   @map("serial_number") @db.VarChar(255) //use snake_case for schema for better Typescript support
+  installDate  DateTime @map("install_date") @db.Date
+  status       String   @db.VarChar(50)
+
+  @@map("equipment") // Use lowercase for table name
+}
