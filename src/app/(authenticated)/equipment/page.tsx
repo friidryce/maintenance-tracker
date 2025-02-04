@@ -1,14 +1,50 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Modal from '@/components/ui/Modal';
 import EquipmentForm from '@/components/forms/EquipmentForm';
+import { DataTable } from '@/components/DataTable';
+import { equipmentColumns } from '@/components/table/columns';
+import { Equipment } from '@/interfaces/data';
+
+// Temporary mock data - replace with actual API call later
+const mockEquipment: Equipment[] = [
+  {
+    id: '1',
+    name: 'CNC Machine',
+    location: 'Building A',
+    department: 'Machining',
+    model: 'CNC-2000',
+    serialNumber: 'CN2000-123',
+    installDate: new Date('2023-01-15'),
+    status: 'Operational',
+  },
+  {
+    id: '2',
+    name: 'Packaging Robot',
+    location: 'Building B',
+    department: 'Packaging',
+    model: 'PR-500',
+    serialNumber: 'PR500-456',
+    installDate: new Date('2023-03-20'),
+    status: 'Maintenance',
+  },
+];
 
 export default function EquipmentPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+
+  useEffect(() => {
+    // TODO: Replace with actual API call
+    setEquipment(mockEquipment);
+  }, []);
+
+  const handleEquipmentAdded = (newEquipment: Equipment) => {
+    setEquipment((prev) => [...prev, newEquipment]);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -20,21 +56,20 @@ export default function EquipmentPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Equipment List</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">No equipment found</p>
-        </CardContent>
-      </Card>
+      <DataTable 
+        columns={equipmentColumns} 
+        data={equipment} 
+      />
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         title="Add New Equipment"
       >
-        <EquipmentForm />
+        <EquipmentForm 
+          onSubmitSuccess={handleEquipmentAdded}
+          onClose={() => setIsModalOpen(false)}
+        />
       </Modal>
     </div>
   );

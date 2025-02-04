@@ -12,15 +12,31 @@ import {
 } from "@/components/ui/select";
 import { submitEquipment } from '@/app/actions/equipment';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
+import { Equipment } from '@/interfaces/data';
 
 const departments = ['Machining', 'Assembly', 'Packaging', 'Shipping'] as const;
 const statuses = ['Operational', 'Down', 'Maintenance', 'Retired'] as const;
 
-export default function EquipmentForm() {
+interface EquipmentFormProps {
+  onSubmitSuccess?: (equipment: Equipment) => void;
+  onClose?: () => void;
+}
+
+export default function EquipmentForm({ onSubmitSuccess, onClose }: EquipmentFormProps) {
   const { pending } = useFormStatus();
 
+  async function handleSubmit(formData: FormData) {
+    try {
+      const equipment = await submitEquipment(formData);
+      onSubmitSuccess?.(equipment);
+      onClose?.();
+    } catch (error) {
+      console.error('Failed to submit equipment:', error);
+    }
+  }
+
   return (
-    <FormContainer action={submitEquipment}>
+    <FormContainer action={handleSubmit}>
       <FormField>
         <RequiredLabel htmlFor="name">Name</RequiredLabel>
         <FormDescription>
