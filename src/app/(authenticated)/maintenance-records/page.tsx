@@ -1,51 +1,37 @@
-'use client';
-
-import { useState } from 'react';
-import Modal from '@/components/ui/Modal';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import MaintenanceForm from '@/components/forms/MaintenanceForm';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
+import { DataTable } from '@/components/DataTable';
+import { maintenanceColumns } from '@/components/table/columns';
+import { getMaintenance } from '@/app/actions/maintenance';
 
-export default function MaintenanceRecordsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // TODO: Fetch this data from your API
-  const equipmentOptions = [
-    { id: '1', name: 'Machine 1' },
-    { id: '2', name: 'Machine 2' },
-  ];
+export default async function MaintenanceRecordsPage() {
+  const records = await getMaintenance();
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Maintenance Records
-        </h1>
-        <Button 
-          onClick={() => setIsModalOpen(true)}
-          className="gap-2"
-        >
-          <PlusCircle className="h-4 w-4" />
-          Create Record
-        </Button>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Maintenance Records</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Record
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Maintenance Record</DialogTitle>
+              <DialogDescription>
+                Fill out the form below to add a new maintenance record.
+              </DialogDescription>
+            </DialogHeader>
+            <MaintenanceForm />
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-sm text-muted-foreground">
-            No maintenance records found
-          </p>
-        </CardContent>
-      </Card>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Create Maintenance Record"
-      >
-        <MaintenanceForm equipmentOptions={equipmentOptions} />
-      </Modal>
+      <DataTable columns={maintenanceColumns} data={records} />
     </div>
   );
 } 

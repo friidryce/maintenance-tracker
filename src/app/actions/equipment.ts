@@ -1,7 +1,7 @@
 'use server'
 import { equipmentSchema } from '@/schemas/forms';
 import { Equipment, EquipmentCreate, Department, Status } from '@/types/equipment';
-import { createEquipment, getAllEquipment, updateEquipment as updateEquipmentService, deleteEquipment as deleteEquipmentService } from '../services/equipmentService';
+import { createEquipment, getAllEquipment, updateEquipment as updateEquipmentService, deleteEquipment as deleteEquipmentService } from '@/services/equipmentService';
 import { revalidatePath } from 'next/cache';
 
 export async function submitEquipment(formData: FormData) {

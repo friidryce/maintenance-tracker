@@ -1,6 +1,3 @@
-'use client';
-
-import { useFormStatus } from 'react-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,17 +10,12 @@ import {
 } from "@/components/ui/select";
 import { submitMaintenance } from '@/app/actions/maintenance';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
+import { MAINTENANCE_TYPES, PRIORITIES, COMPLETION_STATUSES } from '@/types/maintenance';
+import { getEquipment } from '@/app/actions/equipment';
 
-const maintenanceTypes = ['Preventive', 'Corrective', 'Inspection'] as const;
-const priorities = ['Low', 'Medium', 'High', 'Critical'] as const;
-const completionStatuses = ['Scheduled', 'In Progress', 'Completed', 'Delayed'] as const;
-
-interface MaintenanceFormProps {
-  equipmentOptions: Array<{ id: string; name: string; }>;
-}
-
-export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormProps) {
-  const { pending } = useFormStatus();
+export default async function MaintenanceForm() {
+  'use server'
+  const equipment = await getEquipment();
 
   return (
     <FormContainer action={submitMaintenance}>
@@ -37,9 +29,9 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             <SelectValue placeholder="Select equipment" />
           </SelectTrigger>
           <SelectContent>
-            {equipmentOptions.map(equipment => (
-              <SelectItem key={equipment.id} value={equipment.id}>
-                {equipment.name}
+            {equipment.map(item => (
+              <SelectItem key={item.id} value={item.id}>
+                {item.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -49,7 +41,7 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
       <FormField>
         <RequiredLabel htmlFor="date">Date</RequiredLabel>
         <FormDescription>
-          Date when the maintenance was or will be performed. Cannot be a past date.
+          Date when the maintenance was or will be performed.
         </FormDescription>
         <Input
           type="date"
@@ -70,7 +62,7 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
-            {maintenanceTypes.map(type => (
+            {MAINTENANCE_TYPES.map(type => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
           </SelectContent>
@@ -130,7 +122,7 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             <SelectValue placeholder="Select priority" />
           </SelectTrigger>
           <SelectContent>
-            {priorities.map(priority => (
+            {PRIORITIES.map(priority => (
               <SelectItem key={priority} value={priority}>{priority}</SelectItem>
             ))}
           </SelectContent>
@@ -147,15 +139,15 @@ export default function MaintenanceForm({ equipmentOptions }: MaintenanceFormPro
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            {completionStatuses.map(status => (
+            {COMPLETION_STATUSES.map(status => (
               <SelectItem key={status} value={status}>{status}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </FormField>
 
-      <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? 'Saving...' : 'Save Maintenance Record'}
+      <Button type="submit" className="w-full">
+        Save Maintenance Record
       </Button>
     </FormContainer>
   );

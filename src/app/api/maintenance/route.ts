@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createEquipment, getAllEquipment, updateEquipment, deleteEquipment } from '@/services/equipmentService';
-import { equipmentSchema } from '@/schemas/forms';
-
+import { createMaintenance, getAllMaintenance, updateMaintenance, deleteMaintenance } from '@/services/maintenanceService';
+import { maintenanceSchema } from '@/schemas/forms';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const validatedData = equipmentSchema.parse(body);
-    const equipment = await createEquipment(validatedData);
-    return NextResponse.json(equipment, { status: 201 });
+    const validatedData = maintenanceSchema.parse(body);
+    const maintenance = await createMaintenance(validatedData);
+    return NextResponse.json(maintenance, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: 'Invalid request data' },
@@ -19,11 +18,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const equipment = await getAllEquipment();
-    return NextResponse.json(equipment);
+    const records = await getAllMaintenance();
+    return NextResponse.json(records);
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to fetch equipment' },
+      { error: 'Failed to fetch maintenance records' },
       { status: 500 }
     );
   }
@@ -34,15 +33,15 @@ export async function PUT(request: NextRequest) {
     const { id, ...data } = await request.json();
     if (!id) {
       return NextResponse.json(
-        { error: 'Equipment ID is required' },
+        { error: 'Maintenance record ID is required' },
         { status: 400 }
       );
     }
-    const equipment = await updateEquipment(id, data);
-    return NextResponse.json(equipment);
+    const maintenance = await updateMaintenance(id, data);
+    return NextResponse.json(maintenance);
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to update equipment' },
+      { error: 'Failed to update maintenance record' },
       { status: 400 }
     );
   }
@@ -53,15 +52,15 @@ export async function DELETE(request: NextRequest) {
     const { id } = await request.json();
     if (!id) {
       return NextResponse.json(
-        { error: 'Equipment ID is required' },
+        { error: 'Maintenance record ID is required' },
         { status: 400 }
       );
     }
-    await deleteEquipment(id);
+    await deleteMaintenance(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to delete equipment' },
+      { error: 'Failed to delete maintenance record' },
       { status: 400 }
     );
   }

@@ -8,14 +8,31 @@ datasource db {
 }
 
 model Equipment {
-  id           String   @id @default(uuid()) @db.VarChar(255)
-  name         String   @db.VarChar(255)
-  location     String   @db.VarChar(255)
-  department   String   @db.VarChar(50)
-  model        String   @db.VarChar(255)
-  serialNumber String   @map("serial_number") @db.VarChar(255) //use snake_case for schema for better Typescript support
-  installDate  DateTime @map("install_date") @db.Date
-  status       String   @db.VarChar(50)
+  id                 String               @id @default(uuid()) @db.VarChar(255)
+  name               String               @db.VarChar(255)
+  location           String               @db.VarChar(255)
+  department         String               @db.VarChar(50)
+  model              String               @db.VarChar(255)
+  serialNumber       String               @map("serial_number") @db.VarChar(255)
+  installDate        DateTime             @map("install_date") @db.Date
+  status             String               @db.VarChar(50)
+  maintenance_record maintenance_record[]
 
-  @@map("equipment") // Use lowercase for table name
+  @@map("equipment")
+}
+
+model maintenance_record {
+  id                String    @id @default(uuid()) @db.VarChar(255)
+  equipmentId       String    @map("equipment_id") @db.VarChar(255)
+  date             DateTime  @db.Date
+  type             String    @db.VarChar(50)
+  technician       String    @db.VarChar(100)
+  hoursSpent       Decimal   @map("hours_spent") @db.Decimal(5, 2)
+  description      String
+  partsReplaced    Json?     @map("parts_replaced")
+  priority         String    @db.VarChar(50)
+  completionStatus String    @map("completion_status") @db.VarChar(50)
+  equipment        Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_equipment")
+
+  @@map("maintenance_record")
 }
