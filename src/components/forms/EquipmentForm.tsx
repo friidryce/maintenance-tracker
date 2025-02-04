@@ -1,6 +1,3 @@
-'use client';
-
-import { useFormStatus } from 'react-dom';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,31 +9,11 @@ import {
 } from "@/components/ui/select";
 import { submitEquipment } from '@/app/actions/equipment';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
-import { Equipment } from '@/interfaces/data';
+import { Equipment, DEPARTMENTS, STATUSES } from '@/types/equipment';
 
-const departments = ['Machining', 'Assembly', 'Packaging', 'Shipping'] as const;
-const statuses = ['Operational', 'Down', 'Maintenance', 'Retired'] as const;
-
-interface EquipmentFormProps {
-  onSubmitSuccess?: (equipment: Equipment) => void;
-  onClose?: () => void;
-}
-
-export default function EquipmentForm({ onSubmitSuccess, onClose }: EquipmentFormProps) {
-  const { pending } = useFormStatus();
-
-  async function handleSubmit(formData: FormData) {
-    try {
-      const equipment = await submitEquipment(formData);
-      onSubmitSuccess?.(equipment);
-      onClose?.();
-    } catch (error) {
-      console.error('Failed to submit equipment:', error);
-    }
-  }
-
+export default function EquipmentForm() {
   return (
-    <FormContainer action={handleSubmit}>
+    <FormContainer action={submitEquipment}>
       <FormField>
         <RequiredLabel htmlFor="name">Name</RequiredLabel>
         <FormDescription>
@@ -69,12 +46,12 @@ export default function EquipmentForm({ onSubmitSuccess, onClose }: EquipmentFor
         <FormDescription>
           Department responsible for this equipment.
         </FormDescription>
-        <Select name="department" defaultValue="Machining" required>
+        <Select name="department" defaultValue="Machining">
           <SelectTrigger>
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
           <SelectContent>
-            {departments.map(dept => (
+            {DEPARTMENTS.map(dept => (
               <SelectItem key={dept} value={dept}>{dept}</SelectItem>
             ))}
           </SelectContent>
@@ -127,20 +104,20 @@ export default function EquipmentForm({ onSubmitSuccess, onClose }: EquipmentFor
         <FormDescription>
           Current operational status of the equipment.
         </FormDescription>
-        <Select name="status" defaultValue="Operational" required>
+        <Select name="status" defaultValue="Operational">
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            {statuses.map(status => (
+            {STATUSES.map(status => (
               <SelectItem key={status} value={status}>{status}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </FormField>
 
-      <Button type="submit" className="w-full" disabled={pending}>
-        {pending ? 'Saving...' : 'Save Equipment'}
+      <Button type="submit" className="w-full">
+        Save Equipment
       </Button>
     </FormContainer>
   );

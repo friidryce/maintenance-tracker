@@ -1,76 +1,37 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import Modal from '@/components/ui/Modal';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import EquipmentForm from '@/components/forms/EquipmentForm';
 import { DataTable } from '@/components/DataTable';
 import { equipmentColumns } from '@/components/table/columns';
-import { Equipment } from '@/interfaces/data';
+import { getEquipment } from '@/app/actions/equipment';
 
-// Temporary mock data - replace with actual API call later
-const mockEquipment: Equipment[] = [
-  {
-    id: '1',
-    name: 'CNC Machine',
-    location: 'Building A',
-    department: 'Machining',
-    model: 'CNC-2000',
-    serialNumber: 'CN2000-123',
-    installDate: new Date('2023-01-15'),
-    status: 'Operational',
-  },
-  {
-    id: '2',
-    name: 'Packaging Robot',
-    location: 'Building B',
-    department: 'Packaging',
-    model: 'PR-500',
-    serialNumber: 'PR500-456',
-    installDate: new Date('2023-03-20'),
-    status: 'Maintenance',
-  },
-];
-
-export default function EquipmentPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
-
-  useEffect(() => {
-    // TODO: Replace with actual API call
-    setEquipment(mockEquipment);
-  }, []);
-
-  const handleEquipmentAdded = (newEquipment: Equipment) => {
-    setEquipment((prev) => [...prev, newEquipment]);
-  };
+export default async function EquipmentPage() {
+  const equipment = await getEquipment();
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Equipment</h1>
-        <Button onClick={() => setIsModalOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Equipment
-        </Button>
+    <div className="container mx-auto py-10">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Equipment</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Equipment
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Equipment</DialogTitle>
+              <DialogDescription>
+                Fill out the form below to add new equipment to the system.
+              </DialogDescription>
+            </DialogHeader>
+            <EquipmentForm />
+          </DialogContent>
+        </Dialog>
       </div>
-
-      <DataTable 
-        columns={equipmentColumns} 
-        data={equipment} 
-      />
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add New Equipment"
-      >
-        <EquipmentForm 
-          onSubmitSuccess={handleEquipmentAdded}
-          onClose={() => setIsModalOpen(false)}
-        />
-      </Modal>
+      <DataTable columns={equipmentColumns} data={equipment} />
     </div>
   );
 } 
