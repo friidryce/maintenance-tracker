@@ -14,11 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useState } from 'react'
-
-interface DateRange {
-  from: Date | undefined
-  to: Date | undefined
-}
+import { DateRange } from 'react-day-picker'
 
 interface TextFilterProps<TData> {
   column: Column<TData>
@@ -81,10 +77,7 @@ interface DateRangeFilterProps<TData> {
 }
 
 export function DateRangeFilter<TData>({ column }: DateRangeFilterProps<TData>) {
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: undefined,
-    to: undefined,
-  })
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
   return (
     <Popover>
@@ -105,12 +98,12 @@ export function DateRangeFilter<TData>({ column }: DateRangeFilterProps<TData>) 
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent align="center" sideOffset={4} className="w-auto p-0">
         <Calendar
-          initialFocus
           mode="range"
-          selected={{ from: dateRange?.from, to: dateRange?.to }}
-          onSelect={(range: any) => {
+          defaultMonth={dateRange?.from}
+          selected={dateRange}
+          onSelect={(range) => {
             setDateRange(range)
             if (range?.from && range?.to) {
               column.setFilterValue([range.from, range.to])
@@ -119,6 +112,7 @@ export function DateRangeFilter<TData>({ column }: DateRangeFilterProps<TData>) 
             }
           }}
           numberOfMonths={2}
+          disabled={{ after: new Date() }}
         />
       </PopoverContent>
     </Popover>
