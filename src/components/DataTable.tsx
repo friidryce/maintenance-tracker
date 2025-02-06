@@ -118,11 +118,11 @@ export function DataTable<TData>({
 
   return (
     <div>
-      <div className="rounded-md border">
+      <div className="rounded-md border border-neutral-200 dark:border-neutral-800">
         <Table>
-          <TableHeader className="border-b">
+          <TableHeader className="border-b border-neutral-200 dark:border-neutral-800">
             {/* Filter Row */}
-            <TableRow className="border-b">
+            <TableRow className="border-b border-neutral-200 dark:border-neutral-800">
               {table.getAllColumns().map((column) => (
                 <TableHead key={column.id} className="p-2">
                   {renderColumnFilter(column)}
@@ -131,7 +131,7 @@ export function DataTable<TData>({
             </TableRow>
             {/* Header Row */}
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b">
+              <TableRow key={headerGroup.id} className="border-b border-neutral-200 dark:border-neutral-800">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder ? null : (
@@ -169,12 +169,12 @@ export function DataTable<TData>({
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'border-b transition-colors',
+                    'border-b border-neutral-200 dark:border-neutral-800 transition-colors',
                     isEquipmentTable ? getStatusColor(row as Row<Equipment>) : ''
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="border-r last:border-r-0">
+                    <TableCell key={cell.id} className="border-r border-neutral-200 dark:border-neutral-800 last:border-r-0">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
