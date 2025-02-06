@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useTransition, useState, useCallback } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,15 +20,35 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
+import { CalendarIcon, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-export default function MaintenanceForm({ equipment }: { equipment: Equipment[] }) {
+interface MaintenanceFormProps {
+  equipment: Equipment[];
+}
+
+export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
   const [isPending, startTransition] = useTransition();
   const { setOpen } = useDialog();
   const [date, setDate] = useState<Date>();
+  const [parts, setParts] = useState<string[]>([]);
 
-  async function onSubmit(formData: FormData) {
+  const handlePartInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.endsWith(' ')) {
+      const part = value.trim();
+      if (part) {
+        setParts(prev => [...prev, part]);
+        e.target.value = '';
+      }
+    }
+  }, []);
+
+  const removePart = useCallback((index: number) => {
+    setParts(prev => prev.filter((_, i) => i !== index));
+  }, []);
+
+  async function handleSubmit(formData: FormData) {
     startTransition(async () => {
       try {
         await submitRecord('maintenance', formData);
@@ -40,7 +60,7 @@ export default function MaintenanceForm({ equipment }: { equipment: Equipment[] 
   }
 
   return (
-    <FormContainer action={onSubmit}>
+    <FormContainer action={handleSubmit}>
       <FormField>
         <RequiredLabel htmlFor="equipmentId">Equipment</RequiredLabel>
         <FormDescription>
@@ -84,7 +104,7 @@ export default function MaintenanceForm({ equipment }: { equipment: Equipment[] 
               selected={date}
               onSelect={setDate}
               disabled={(date) => date > new Date()}
-              autoFocus
+              initialFocus
             />
           </PopoverContent>
         </Popover>
@@ -153,6 +173,39 @@ export default function MaintenanceForm({ equipment }: { equipment: Equipment[] 
           placeholder="Describe the maintenance work in detail..."
           className="min-h-[100px]"
         />
+      </FormField>
+
+      <FormField>
+        <RequiredLabel htmlFor="partsReplaced">Parts Replaced</RequiredLabel>
+        <FormDescription>
+          List any parts that were replaced during maintenance. Press space to add a part.
+        </FormDescription>
+        <div className="space-y-2">
+          <Input
+            onChange={handlePartInput}
+            placeholder="Type and press space to add parts"
+          />
+          {parts.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {parts.map((part, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="cursor-pointer hover:bg-destructive/20"
+                  onClick={() => removePart(index)}
+                >
+                  {part}
+                  <X className="ml-1 h-3 w-3" />
+                </Badge>
+              ))}
+            </div>
+          )}
+          <input
+            type="hidden"
+            name="partsReplaced"
+            value={JSON.stringify(parts)}
+          />
+        </div>
       </FormField>
 
       <FormField>

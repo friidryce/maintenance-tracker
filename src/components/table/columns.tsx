@@ -3,6 +3,8 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { Equipment } from '@/types/equipment'
 import { MaintenanceRecord } from '@/types/maintenance'
+import { Badge } from '@/components/ui/badge'
+import { JSX } from 'react'
 
 export const equipmentColumns: ColumnDef<Equipment>[] = [
   {
@@ -154,7 +156,37 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord>[] = [
   {
     accessorKey: 'partsReplaced',
     header: 'Parts Replaced',
+    cell: ({ row }): JSX.Element | null => {
+      const parts = row.getValue('partsReplaced') as string | null;
+      if (!parts) return null;
+      try {
+        const parsedParts = JSON.parse(parts) as string[];
+        return (
+          <div className="flex flex-wrap gap-1">
+            {parsedParts.map((part: string, index: number) => (
+              <Badge key={index} variant="secondary">
+                {part}
+              </Badge>
+            ))}
+          </div>
+        );
+      } catch {
+        return null;
+      }
+    },
     sortingFn: 'text',
-    filterFn: 'includesString'
+    filterFn: (row, id, value) => {
+      const parts = row.getValue(id) as string | null;
+      if (!parts || !value) return true;
+      try {
+        const parsedParts = JSON.parse(parts) as string[];
+        const searchValue = (value as string).toLowerCase();
+        return parsedParts.some(part => 
+          part.toLowerCase().includes(searchValue)
+        );
+      } catch {
+        return false;
+      }
+    }
   },
 ]

@@ -41,7 +41,15 @@ export const maintenanceFormSchema = z.object({
     .max(24, 'Hours cannot exceed 24'),
   description: z.string()
     .min(10, 'Description must be at least 10 characters'),
-  partsReplaced: z.array(z.string()).optional(),
+  partsReplaced: z.string()
+    .transform((str) => {
+      try {
+        const parsed = JSON.parse(str);
+        return z.array(z.string()).parse(parsed);
+      } catch {
+        return [];
+      }
+    }),
   priority: z.enum(priorities, {
     errorMap: () => ({ message: 'Invalid priority' })
   }),
@@ -55,7 +63,7 @@ export const maintenanceSchema = maintenanceFormSchema.transform((data) => {
   const { partsReplaced, ...rest } = data;
   return {
     ...rest,
-    partsReplaced: partsReplaced ? JSON.stringify(partsReplaced) : null
+    partsReplaced: partsReplaced.length ? JSON.stringify(partsReplaced) : null
   };
 });
 
