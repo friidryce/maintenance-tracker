@@ -1,3 +1,6 @@
+'use client';
+
+import { useActionState, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,23 +11,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { submitMaintenance } from '@/app/actions/maintenance';
+import { useDialog } from '@/components/ui/dialog';
+import { submitMaintenance, type FormState } from '@/app/actions/maintenance';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
 import { MAINTENANCE_TYPES, PRIORITIES, COMPLETION_STATUSES } from '@/types/maintenance';
-import { getEquipment } from '@/app/actions/equipment';
+import { Equipment } from '@/types/equipment';
 
-export default async function MaintenanceForm() {
-  'use server'
-  const equipment = await getEquipment();
+const initialState: FormState = { message: undefined, errors: undefined, values: undefined };
+
+export default function MaintenanceForm({ equipment }: { equipment: Equipment[] }) {
+  const [state, formAction] = useActionState(submitMaintenance, initialState);
+  const { setOpen } = useDialog();
+
+  useEffect(() => {
+    if (state?.message === 'Maintenance record created successfully') {
+      setOpen(false);
+    }
+  }, [state?.message, setOpen]);
 
   return (
-    <FormContainer action={submitMaintenance}>
+    <FormContainer action={formAction}>
+      {state?.message && state.message !== 'Maintenance record created successfully' && (
+        <div className="mb-4 p-2 text-sm border rounded-md bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400">
+          {state.message}
+        </div>
+      )}
+
       <FormField>
         <RequiredLabel htmlFor="equipmentId">Equipment</RequiredLabel>
         <FormDescription>
-          Select the equipment that requires maintenance.
+          Select the equipment that needs maintenance.
         </FormDescription>
-        <Select name="equipmentId" required>
+        <Select name="equipmentId" required defaultValue={state?.values?.equipmentId}>
           <SelectTrigger>
             <SelectValue placeholder="Select equipment" />
           </SelectTrigger>
@@ -36,28 +54,35 @@ export default async function MaintenanceForm() {
             ))}
           </SelectContent>
         </Select>
+        {state?.errors?.equipmentId && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.equipmentId.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="date">Date</RequiredLabel>
         <FormDescription>
-          Date when the maintenance was or will be performed.
+          Date of maintenance. Cannot be in the future.
         </FormDescription>
         <Input
           type="date"
           id="date"
           name="date"
           required
-          min={new Date().toISOString().split('T')[0]}
+          max={new Date().toISOString().split('T')[0]}
+          defaultValue={state?.values?.date?.toISOString().split('T')[0]}
         />
+        {state?.errors?.date && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.date.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="type">Maintenance Type</RequiredLabel>
         <FormDescription>
-          Type of maintenance to be performed.
+          Select whether this is a preventive, repair, or emergency maintenance.
         </FormDescription>
-        <Select name="type" defaultValue="Preventive" required>
+        <Select name="type" defaultValue={state?.values?.type ?? "Preventive"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
@@ -67,41 +92,52 @@ export default async function MaintenanceForm() {
             ))}
           </SelectContent>
         </Select>
+        {state?.errors?.type && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.type.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="technician">Technician</RequiredLabel>
         <FormDescription>
-          Name of the technician responsible for the maintenance.
+          Name of the technician (minimum 2 characters).
         </FormDescription>
         <Input
           id="technician"
           name="technician"
           required
           placeholder="e.g., John Smith"
+          defaultValue={state?.values?.technician}
         />
+        {state?.errors?.technician && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.technician.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="hoursSpent">Hours Spent</RequiredLabel>
         <FormDescription>
-          Number of hours spent on maintenance. Must be a positive number.
+          Time spent on maintenance (between 0.01 and 24 hours).
         </FormDescription>
         <Input
           type="number"
           id="hoursSpent"
           name="hoursSpent"
           required
-          min="0"
-          step="0.5"
+          min="0.01"
+          max="24"
           placeholder="e.g., 2.5"
+          defaultValue={state?.values?.hoursSpent}
         />
+        {state?.errors?.hoursSpent && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.hoursSpent.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="description">Description</RequiredLabel>
         <FormDescription>
-          Detailed description of the maintenance work performed or to be performed.
+          Detailed description of the maintenance work (minimum 10 characters).
         </FormDescription>
         <Textarea
           id="description"
@@ -109,15 +145,19 @@ export default async function MaintenanceForm() {
           required
           placeholder="Describe the maintenance work in detail..."
           className="min-h-[100px]"
+          defaultValue={state?.values?.description}
         />
+        {state?.errors?.description && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.description.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="priority">Priority</RequiredLabel>
         <FormDescription>
-          Priority level of the maintenance task.
+          Select the urgency level of this maintenance task.
         </FormDescription>
-        <Select name="priority" defaultValue="Medium" required>
+        <Select name="priority" defaultValue={state?.values?.priority ?? "Medium"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select priority" />
           </SelectTrigger>
@@ -127,14 +167,17 @@ export default async function MaintenanceForm() {
             ))}
           </SelectContent>
         </Select>
+        {state?.errors?.priority && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.priority.join(', ')}</div>
+        )}
       </FormField>
 
       <FormField>
         <RequiredLabel htmlFor="completionStatus">Completion Status</RequiredLabel>
         <FormDescription>
-          Current status of the maintenance task.
+          Current progress status of the maintenance task.
         </FormDescription>
-        <Select name="completionStatus" defaultValue="Scheduled" required>
+        <Select name="completionStatus" defaultValue={state?.values?.completionStatus ?? "Incomplete"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
@@ -144,6 +187,9 @@ export default async function MaintenanceForm() {
             ))}
           </SelectContent>
         </Select>
+        {state?.errors?.completionStatus && (
+          <div className="mt-1 text-sm text-red-500">{state.errors.completionStatus.join(', ')}</div>
+        )}
       </FormField>
 
       <Button type="submit" className="w-full">

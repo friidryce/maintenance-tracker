@@ -6,7 +6,32 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Dialog = DialogPrimitive.Root
+type DialogContextType = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+const DialogContext = React.createContext<DialogContextType | null>(null);
+
+export function useDialog() {
+  const context = React.useContext(DialogContext);
+  if (!context) {
+    throw new Error('useDialog must be used within a Dialog component');
+  }
+  return context;
+}
+
+const Dialog = ({ children, ...props }: DialogPrimitive.DialogProps) => {
+  const [open, setOpen] = React.useState(props.open ?? false);
+  
+  return (
+    <DialogContext.Provider value={{ open, setOpen }}>
+      <DialogPrimitive.Root open={open} onOpenChange={setOpen} {...props}>
+        {children}
+      </DialogPrimitive.Root>
+    </DialogContext.Provider>
+  );
+}
 
 const DialogTrigger = DialogPrimitive.Trigger
 

@@ -5,9 +5,13 @@ import MaintenanceForm from '@/components/forms/MaintenanceForm';
 import { DataTable } from '@/components/DataTable';
 import { maintenanceColumns } from '@/components/table/columns';
 import { getMaintenance } from '@/app/actions/maintenance';
+import { getEquipment } from '@/app/actions/equipment';
 
 export default async function MaintenanceRecordsPage() {
-  const records = await getMaintenance();
+  const [records, equipment] = await Promise.all([
+    getMaintenance(),
+    getEquipment()
+  ]);
 
   return (
     <div className="container mx-auto py-10">
@@ -27,7 +31,7 @@ export default async function MaintenanceRecordsPage() {
                 Fill out the form below to add a new maintenance record.
               </DialogDescription>
             </DialogHeader>
-            <MaintenanceForm />
+            <MaintenanceForm equipment={equipment} />
           </DialogContent>
         </Dialog>
       </div>

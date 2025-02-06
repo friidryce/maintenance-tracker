@@ -25,16 +25,21 @@ import { Button } from '@/components/ui/button'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { TextFilter, MultiSelectFilter, DateRangeFilter } from './table/filters'
+import { Equipment } from '@/types/equipment'
+import { equipmentColumns } from './table/columns'
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
   data: TData[]
 }
 
-const getStatusColor = (row: Row<any>) => {
+const getStatusColor = (row: Row<Equipment>) => {
   const status = row.getValue('status')
-  
-  switch (status?.toString().toLowerCase()) {
+  if (!status) {
+    return '';
+  }
+
+  switch (status.toString().toLowerCase()) {
     case 'operational':
       return 'bg-green-50 dark:bg-green-950/30'
     case 'down':
@@ -69,6 +74,8 @@ export function DataTable<TData>({
       columnFilters,
     },
   })
+
+  const isEquipmentTable = columns === equipmentColumns
 
   const renderColumnFilter = (column: any) => {
     const columnId = column.id
@@ -163,7 +170,7 @@ export function DataTable<TData>({
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
                     'border-b transition-colors',
-                    getStatusColor(row)
+                    isEquipmentTable ? getStatusColor(row as Row<Equipment>) : ''
                   )}
                 >
                   {row.getVisibleCells().map((cell) => (
