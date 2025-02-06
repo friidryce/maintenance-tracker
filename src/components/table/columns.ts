@@ -151,4 +151,10 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord>[] = [
       return statuses.includes(rowValue)
     }
   },
+  {
+    accessorKey: 'partsReplaced',
+    header: 'Parts Replaced',
+    sortingFn: 'text',
+    filterFn: 'includesString'
+  },
 ]

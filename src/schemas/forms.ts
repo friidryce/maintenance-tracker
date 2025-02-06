@@ -18,25 +18,26 @@ export const equipmentSchema = z.object({
     .min(1, 'Model is required'),
   serialNumber: z.string()
     .regex(/^[a-zA-Z0-9]+$/, 'Serial Number must be alphanumeric'),
-  installDate: z.date()
+  installDate: z.coerce.date()
     .max(new Date(), 'Install Date cannot be in the future'),
   status: z.enum(statuses, {
     errorMap: () => ({ message: 'Invalid status' })
   })
 });
 
-export const maintenanceSchema = z.object({
+// Schema for validating form input
+export const maintenanceFormSchema = z.object({
   equipmentId: z.string()
     .min(1, 'Equipment selection is required'),
-  date: z.date()
+  date: z.coerce.date()
     .max(new Date(), 'Date cannot be in the future'),
   type: z.enum(maintenanceTypes, {
     errorMap: () => ({ message: 'Invalid maintenance type' })
   }),
   technician: z.string()
     .min(2, 'Technician name must be at least 2 characters'),
-  hoursSpent: z.number()
-    .min(0.1, 'Hours must be greater than 0')
+  hoursSpent: z.coerce.number()
+    .min(1, 'Hours must be at least 1')
     .max(24, 'Hours cannot exceed 24'),
   description: z.string()
     .min(10, 'Description must be at least 10 characters'),
@@ -49,5 +50,14 @@ export const maintenanceSchema = z.object({
   })
 });
 
+// Transform the form data into Prisma's expected format
+export const maintenanceSchema = maintenanceFormSchema.transform((data) => {
+  const { partsReplaced, ...rest } = data;
+  return {
+    ...rest,
+    partsReplaced: partsReplaced ? JSON.stringify(partsReplaced) : null
+  };
+});
+
 export type EquipmentFormData = z.infer<typeof equipmentSchema>;
-export type MaintenanceFormData = z.infer<typeof maintenanceSchema>; 
+export type MaintenanceFormData = z.infer<typeof maintenanceFormSchema>; 

@@ -1,3 +1,7 @@
+'use client';
+
+import { useTransition } from 'react';
+import { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,17 +11,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { submitEquipment } from '@/app/actions/equipment';
+import { useDialog } from '@/components/ui/dialog';
+import { submitRecord } from '@/app/actions/records';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
-import { Equipment, DEPARTMENTS, STATUSES } from '@/types/equipment';
+import { DEPARTMENTS, STATUSES } from '@/types/equipment';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 
 export default function EquipmentForm() {
+  const [isPending, startTransition] = useTransition();
+  const { setOpen } = useDialog();
+  const [date, setDate] = useState<Date>();
+
+  async function onSubmit(formData: FormData) {
+    startTransition(async () => {
+      try {
+        await submitRecord('equipment', formData);
+        setOpen(false);
+      } catch (error) {
+        console.error('Failed to submit:', error);
+      }
+    });
+  }
+
   return (
-    <FormContainer action={submitEquipment}>
+    <FormContainer action={onSubmit}>
       <FormField>
         <RequiredLabel htmlFor="name">Name</RequiredLabel>
         <FormDescription>
-          A unique identifier for the equipment. Must be at least 3 characters long.
+          A unique identifier for the equipment (minimum 3 characters).
         </FormDescription>
         <Input
           id="name"
@@ -46,7 +71,7 @@ export default function EquipmentForm() {
         <FormDescription>
           Department responsible for this equipment.
         </FormDescription>
-        <Select name="department" defaultValue="Machining">
+        <Select name="department" defaultValue="Machining" required>
           <SelectTrigger>
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
@@ -61,7 +86,7 @@ export default function EquipmentForm() {
       <FormField>
         <RequiredLabel htmlFor="model">Model</RequiredLabel>
         <FormDescription>
-          Equipment model number or name as specified by the manufacturer.
+          Equipment model number or name.
         </FormDescription>
         <Input
           id="model"
@@ -74,7 +99,7 @@ export default function EquipmentForm() {
       <FormField>
         <RequiredLabel htmlFor="serialNumber">Serial Number</RequiredLabel>
         <FormDescription>
-          Unique serial number from the manufacturer. Must contain only letters and numbers.
+          Unique serial number (letters and numbers only).
         </FormDescription>
         <Input
           id="serialNumber"
@@ -88,14 +113,36 @@ export default function EquipmentForm() {
       <FormField>
         <RequiredLabel htmlFor="installDate">Install Date</RequiredLabel>
         <FormDescription>
-          Date when the equipment was installed. Cannot be a future date.
+          Date when the equipment was installed (cannot be in the future).
         </FormDescription>
-        <Input
-          type="date"
-          id="installDate"
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !date && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {date ? format(date, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={setDate}
+              disabled={(date) => date > new Date()}
+              autoFocus
+            />
+          </PopoverContent>
+        </Popover>
+
+        <input
+          type="hidden"
           name="installDate"
-          required
-          max={new Date().toISOString().split('T')[0]}
+          value={date?.toISOString() ?? ''}
         />
       </FormField>
 
@@ -104,7 +151,7 @@ export default function EquipmentForm() {
         <FormDescription>
           Current operational status of the equipment.
         </FormDescription>
-        <Select name="status" defaultValue="Operational">
+        <Select name="status" defaultValue="Operational" required>
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
@@ -116,8 +163,8 @@ export default function EquipmentForm() {
         </Select>
       </FormField>
 
-      <Button type="submit" className="w-full">
-        Save Equipment
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? 'Saving...' : 'Save Equipment'}
       </Button>
     </FormContainer>
   );

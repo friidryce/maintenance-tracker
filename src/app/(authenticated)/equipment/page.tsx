@@ -4,10 +4,12 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import EquipmentForm from '@/components/forms/EquipmentForm';
 import { DataTable } from '@/components/DataTable';
 import { equipmentColumns } from '@/components/table/columns';
-import { getEquipment } from '@/app/actions/equipment';
+import { getRecords } from '@/app/actions/records';
+import { Equipment } from '@/types/equipment';
+
 
 export default async function EquipmentPage() {
-  const equipment = await getEquipment();
+  const equipment = await getRecords('equipment') as Equipment[];
 
   return (
     <div className="container mx-auto py-10">

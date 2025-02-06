@@ -4,13 +4,14 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import MaintenanceForm from '@/components/forms/MaintenanceForm';
 import { DataTable } from '@/components/DataTable';
 import { maintenanceColumns } from '@/components/table/columns';
-import { getMaintenance } from '@/app/actions/maintenance';
-import { getEquipment } from '@/app/actions/equipment';
+import { getRecords } from '@/app/actions/records';
+import { Equipment } from '@/types/equipment';
+import { MaintenanceRecord } from '@/types/maintenance';
 
 export default async function MaintenanceRecordsPage() {
-  const [records, equipment] = await Promise.all([
-    getMaintenance(),
-    getEquipment()
+  const [records, all_equipment] = await Promise.all([
+    getRecords('maintenance') as Promise<MaintenanceRecord[]>,
+    getRecords('equipment') as Promise<Equipment[]>
   ]);
 
   return (
@@ -31,7 +32,7 @@ export default async function MaintenanceRecordsPage() {
                 Fill out the form below to add a new maintenance record.
               </DialogDescription>
             </DialogHeader>
-            <MaintenanceForm equipment={equipment} />
+            <MaintenanceForm equipment={all_equipment} />
           </DialogContent>
         </Dialog>
       </div>

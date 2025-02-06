@@ -22,12 +22,12 @@ model Equipment {
 }
 
 model maintenance_record {
-  id                String    @id @default(uuid()) @db.VarChar(255)
-  equipmentId       String    @map("equipment_id") @db.VarChar(255)
+  id               String    @id @default(uuid()) @db.VarChar(255)
+  equipmentId      String    @map("equipment_id") @db.VarChar(255)
   date             DateTime  @db.Date
   type             String    @db.VarChar(50)
   technician       String    @db.VarChar(100)
-  hoursSpent       Decimal   @map("hours_spent") @db.Decimal(5, 2)
+  hoursSpent       Int       @map("hours_spent")
   description      String
   partsReplaced    Json?     @map("parts_replaced")
   priority         String    @db.VarChar(50)
