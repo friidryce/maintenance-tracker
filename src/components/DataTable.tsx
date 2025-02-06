@@ -41,13 +41,13 @@ const getStatusColor = (row: Row<Equipment>) => {
 
   switch (status.toString().toLowerCase()) {
     case 'operational':
-      return 'bg-green-50 dark:bg-green-950/30'
+      return 'bg-green-50 dark:bg-green-800/50'
     case 'down':
-      return 'bg-red-50 dark:bg-red-950/30'
+      return 'bg-red-50 dark:bg-red-800/50'
     case 'maintenance':
-      return 'bg-yellow-50 dark:bg-yellow-950/30'
+      return 'bg-yellow-50 dark:bg-amber-700/50'
     case 'retired':
-      return 'bg-gray-50 dark:bg-gray-800/30'
+      return 'bg-gray-50 dark:bg-neutral-700/70'
     default:
       return ''
   }
