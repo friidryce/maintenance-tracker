@@ -136,30 +136,18 @@ export function RangeFilter<TData>({
   title
 }: RangeFilterProps<TData>) {
   const [range, setRange] = useState<[number, number]>([min, max])
-  const timeoutRef = useRef<NodeJS.Timeout>()
 
   const updateValue = useCallback((value: [number, number]) => {
     setRange(value)
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
-    timeoutRef.current = setTimeout(() => {
+    setTimeout(() => {
       column.setFilterValue(value)
-    }, 50) // Small delay to batch rapid updates
+    }, 150) // Increased delay to better handle rapid movements
   }, [column])
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    };
-  }, [])
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-start text-left font-normal">
+        <Button variant="outline" className="w-full min-w-[140px] justify-start text-left font-normal">
           {title}: {range[0]} - {range[1]}
         </Button>
       </PopoverTrigger>
