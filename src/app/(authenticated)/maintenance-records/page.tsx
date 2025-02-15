@@ -36,7 +36,11 @@ export default async function MaintenanceRecordsPage() {
           </DialogContent>
         </Dialog>
       </div>
-      <DataTable columns={maintenanceColumns} data={records} />
+      <DataTable 
+        columns={maintenanceColumns} 
+        data={records} 
+        equipment={all_equipment}
+      />
     </div>
   );
 } 

@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDialog } from '@/components/ui/dialog';
-import { submitRecord } from '@/app/actions/records';
+import { submitRecord, updateRecord } from '@/app/actions/records';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
 import { DEPARTMENTS, STATUSES } from '@/types/equipment';
 import { Calendar } from "@/components/ui/calendar";
@@ -20,17 +20,28 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { Equipment } from '@/types/equipment';
 
-export default function EquipmentForm() {
+interface EquipmentFormProps {
+  initialData?: Equipment;
+  onSuccess?: () => void;
+}
+
+export default function EquipmentForm({ initialData, onSuccess }: EquipmentFormProps) {
   const [isPending, startTransition] = useTransition();
   const { setOpen } = useDialog();
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date | undefined>(initialData?.installDate);
 
   async function onSubmit(formData: FormData) {
     startTransition(async () => {
       try {
-        await submitRecord('equipment', formData);
+        if (initialData) {
+          await updateRecord('equipment', initialData.id, Object.fromEntries(formData.entries()));
+        } else {
+          await submitRecord('equipment', formData);
+        }
         setOpen(false);
+        onSuccess?.();
       } catch (error) {
         console.error('Failed to submit:', error);
       }
@@ -50,6 +61,7 @@ export default function EquipmentForm() {
           required
           minLength={3}
           placeholder="e.g., CNC Machine 01"
+          defaultValue={initialData?.name}
         />
       </FormField>
 
@@ -63,6 +75,7 @@ export default function EquipmentForm() {
           name="location"
           required
           placeholder="e.g., Building A, Room 101"
+          defaultValue={initialData?.location}
         />
       </FormField>
 
@@ -71,7 +84,7 @@ export default function EquipmentForm() {
         <FormDescription>
           Department responsible for this equipment.
         </FormDescription>
-        <Select name="department" defaultValue="Machining" required>
+        <Select name="department" defaultValue={initialData?.department ?? "Machining"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
@@ -93,6 +106,7 @@ export default function EquipmentForm() {
           name="model"
           required
           placeholder="e.g., XYZ-1000"
+          defaultValue={initialData?.model}
         />
       </FormField>
 
@@ -107,6 +121,7 @@ export default function EquipmentForm() {
           required
           pattern="[a-zA-Z0-9]+"
           placeholder="e.g., ABC123XYZ"
+          defaultValue={initialData?.serialNumber}
         />
       </FormField>
 
@@ -151,7 +166,7 @@ export default function EquipmentForm() {
         <FormDescription>
           Current operational status of the equipment.
         </FormDescription>
-        <Select name="status" defaultValue="Operational" required>
+        <Select name="status" defaultValue={initialData?.status ?? "Operational"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
@@ -164,7 +179,7 @@ export default function EquipmentForm() {
       </FormField>
 
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? 'Saving...' : 'Save Equipment'}
+        {isPending ? 'Saving...' : initialData ? 'Update Equipment' : 'Save Equipment'}
       </Button>
     </FormContainer>
   );

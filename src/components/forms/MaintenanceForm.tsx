@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useDialog } from '@/components/ui/dialog';
-import { submitRecord } from '@/app/actions/records';
+import { submitRecord, updateRecord } from '@/app/actions/records';
 import { FormContainer, FormField, FormDescription, RequiredLabel } from '@/components/ui/form-container';
 import { MAINTENANCE_TYPES, PRIORITIES, COMPLETION_STATUSES } from '@/types/maintenance';
 import { Equipment } from '@/types/equipment';
@@ -22,16 +22,21 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MaintenanceRecord } from '@/types/maintenance';
 
 interface MaintenanceFormProps {
   equipment: Equipment[];
+  initialData?: MaintenanceRecord;
+  onSuccess?: () => void;
 }
 
-export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
+export default function MaintenanceForm({ equipment, initialData, onSuccess }: MaintenanceFormProps) {
   const [isPending, startTransition] = useTransition();
   const { setOpen } = useDialog();
-  const [date, setDate] = useState<Date>();
-  const [parts, setParts] = useState<string[]>([]);
+  const [date, setDate] = useState<Date | undefined>(initialData?.date);
+  const [parts, setParts] = useState<string[]>(
+    initialData?.partsReplaced ? JSON.parse(initialData.partsReplaced as string) : []
+  );
 
   const handlePartInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -51,8 +56,13 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
   async function handleSubmit(formData: FormData) {
     startTransition(async () => {
       try {
-        await submitRecord('maintenance', formData);
+        if (initialData) {
+          await updateRecord('maintenance', initialData.id, Object.fromEntries(formData.entries()));
+        } else {
+          await submitRecord('maintenance', formData);
+        }
         setOpen(false);
+        onSuccess?.();
       } catch (error) {
         console.error('Failed to submit:', error);
       }
@@ -66,7 +76,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
         <FormDescription>
           Select the equipment that needs maintenance.
         </FormDescription>
-        <Select name="equipmentId" required>
+        <Select name="equipmentId" defaultValue={initialData?.equipmentId} required>
           <SelectTrigger>
             <SelectValue placeholder="Select equipment" />
           </SelectTrigger>
@@ -120,7 +130,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
         <FormDescription>
           Select whether this is a preventive, repair, or emergency maintenance.
         </FormDescription>
-        <Select name="type" defaultValue="Preventive" required>
+        <Select name="type" defaultValue={initialData?.type ?? "Preventive"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
@@ -142,6 +152,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
           name="technician"
           required
           placeholder="e.g., John Smith"
+          defaultValue={initialData?.technician}
         />
       </FormField>
 
@@ -158,6 +169,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
           min="1"
           max="24"
           placeholder="e.g., 2"
+          defaultValue={initialData?.hoursSpent}
         />
       </FormField>
 
@@ -172,6 +184,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
           required
           placeholder="Describe the maintenance work in detail..."
           className="min-h-[100px]"
+          defaultValue={initialData?.description}
         />
       </FormField>
 
@@ -213,7 +226,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
         <FormDescription>
           Select the urgency level of this maintenance task.
         </FormDescription>
-        <Select name="priority" defaultValue="Medium" required>
+        <Select name="priority" defaultValue={initialData?.priority ?? "Medium"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select priority" />
           </SelectTrigger>
@@ -230,7 +243,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
         <FormDescription>
           Current progress status of the maintenance task.
         </FormDescription>
-        <Select name="completionStatus" defaultValue="Incomplete" required>
+        <Select name="completionStatus" defaultValue={initialData?.completionStatus ?? "Incomplete"} required>
           <SelectTrigger>
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
@@ -243,7 +256,7 @@ export default function MaintenanceForm({ equipment }: MaintenanceFormProps) {
       </FormField>
 
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? 'Saving...' : 'Save Maintenance Record'}
+        {isPending ? 'Saving...' : initialData ? 'Update Maintenance Record' : 'Save Maintenance Record'}
       </Button>
     </FormContainer>
   );

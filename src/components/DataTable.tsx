@@ -32,6 +32,7 @@ import { MAINTENANCE_TYPES, PRIORITIES, COMPLETION_STATUSES } from '@/types/main
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
   data: TData[]
+  equipment?: Equipment[]
 }
 
 const getStatusColor = (row: Row<Equipment>) => {
@@ -57,6 +58,7 @@ const getStatusColor = (row: Row<Equipment>) => {
 export function DataTable<TData>({
   columns,
   data,
+  equipment
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -74,6 +76,9 @@ export function DataTable<TData>({
       sorting,
       columnFilters,
     },
+    meta: {
+      equipment
+    }
   })
 
   const isEquipmentTable = columns === equipmentColumns

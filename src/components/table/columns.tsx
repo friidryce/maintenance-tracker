@@ -5,6 +5,64 @@ import { Equipment } from '@/types/equipment'
 import { MaintenanceRecord } from '@/types/maintenance'
 import { Badge } from '@/components/ui/badge'
 import { JSX } from 'react'
+import { Button } from '@/components/ui/button'
+import { Pencil, Trash2 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog'
+import { useState } from 'react'
+import { deleteRecord } from '@/app/actions/records'
+import EquipmentForm from '@/components/forms/EquipmentForm'
+import MaintenanceForm from '@/components/forms/MaintenanceForm'
+
+const ActionButtons = ({ 
+  row, 
+  type,
+  equipment,
+  onDelete 
+}: { 
+  row: any, 
+  type: 'equipment' | 'maintenance',
+  equipment?: Equipment[],
+  onDelete: () => Promise<void>
+}) => {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="flex gap-2 justify-end">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="bg-yellow-500/20 hover:bg-yellow-500/30 border-yellow-500 relative z-10 before:absolute before:inset-0 before:bg-background/80 before:-z-10"
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent onCloseAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader>
+            <DialogTitle>Edit {type === 'equipment' ? 'Equipment' : 'Maintenance Record'}</DialogTitle>
+            <DialogDescription>
+              Update the details below.
+            </DialogDescription>
+          </DialogHeader>
+          {type === 'equipment' ? (
+            <EquipmentForm initialData={row.original} onSuccess={() => setOpen(false)} />
+          ) : (
+            <MaintenanceForm equipment={equipment || []} initialData={row.original} onSuccess={() => setOpen(false)} />
+          )}
+        </DialogContent>
+      </Dialog>
+      <Button 
+        variant="outline" 
+        size="sm"
+        className="bg-red-500/20 hover:bg-red-500/30 border-red-500 relative z-10 before:absolute before:inset-0 before:bg-background/80 before:-z-10"
+        onClick={onDelete}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}
 
 export const equipmentColumns: ColumnDef<Equipment>[] = [
   {
@@ -70,6 +128,25 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
       return statuses.includes(rowValue)
     }
   },
+  {
+    id: 'actions',
+    header: '',
+    cell: ({ row }) => {
+      const handleDelete = async () => {
+        if (confirm('Are you sure you want to delete this equipment?')) {
+          await deleteRecord('equipment', row.original.id)
+        }
+      }
+
+      return (
+        <ActionButtons
+          row={row}
+          type="equipment"
+          onDelete={handleDelete}
+        />
+      )
+    }
+  }
 ]
 
 export const maintenanceColumns: ColumnDef<MaintenanceRecord>[] = [
@@ -195,4 +272,27 @@ export const maintenanceColumns: ColumnDef<MaintenanceRecord>[] = [
       }
     }
   },
+  {
+    id: 'actions',
+    header: '',
+    cell: ({ row, table }) => {
+      const handleDelete = async () => {
+        if (confirm('Are you sure you want to delete this maintenance record?')) {
+          await deleteRecord('maintenance', row.original.id)
+        }
+      }
+
+      // Get equipment list from the table meta
+      const equipment = (table.options.meta as { equipment?: Equipment[] })?.equipment || []
+
+      return (
+        <ActionButtons
+          row={row}
+          type="maintenance"
+          equipment={equipment}
+          onDelete={handleDelete}
+        />
+      )
+    }
+  }
 ]
