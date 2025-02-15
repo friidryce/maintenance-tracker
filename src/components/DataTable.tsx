@@ -24,9 +24,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { TextFilter, MultiSelectFilter, DateRangeFilter } from './table/filters'
-import { Equipment } from '@/types/equipment'
+import { TextFilter, MultiSelectFilter, DateRangeFilter, RangeFilter } from './table/filters'
+import { Equipment, DEPARTMENTS, STATUSES } from '@/types/equipment'
 import { equipmentColumns } from './table/columns'
+import { MAINTENANCE_TYPES, PRIORITIES, COMPLETION_STATUSES } from '@/types/maintenance'
 
 interface DataTableProps<TData> {
   columns: ColumnDef<TData>[]
@@ -80,6 +81,7 @@ export function DataTable<TData>({
   const renderColumnFilter = (column: any) => {
     const columnId = column.id
 
+    // Equipment table filters
     if (['name', 'location', 'model', 'serialNumber'].includes(columnId)) {
       return (
         <TextFilter
@@ -94,7 +96,7 @@ export function DataTable<TData>({
         <MultiSelectFilter
           column={column}
           title="Department"
-          options={['Machining', 'Assembly', 'Packaging', 'Shipping']}
+          options={[...DEPARTMENTS]}
         />
       )
     }
@@ -104,13 +106,96 @@ export function DataTable<TData>({
         <MultiSelectFilter
           column={column}
           title="Status"
-          options={['Operational', 'Down', 'Maintenance', 'Retired']}
+          options={[...STATUSES]}
         />
       )
     }
 
     if (columnId === 'installDate') {
       return <DateRangeFilter column={column} />
+    }
+
+    // Maintenance table filters
+    if (['description', 'technician'].includes(columnId)) {
+      return (
+        <TextFilter
+          column={column}
+          placeholder={`Filter ${columnId}...`}
+        />
+      )
+    }
+
+    if (columnId === 'equipment_name') {
+      // Get unique equipment names from the data
+      const equipmentNames = Array.from(new Set(
+        table.getPreFilteredRowModel().rows.map(row => {
+          const equipment = (row.original as any).equipment
+          return equipment?.name || ''
+        })
+      )).filter(Boolean).sort()
+
+      return (
+        <MultiSelectFilter
+          column={column}
+          title="Equipment"
+          options={equipmentNames}
+        />
+      )
+    }
+
+    if (columnId === 'partsReplaced') {
+      return (
+        <TextFilter
+          column={column}
+          placeholder="Filter parts..."
+        />
+      )
+    }
+
+    if (columnId === 'type') {
+      return (
+        <MultiSelectFilter
+          column={column}
+          title="Type"
+          options={[...MAINTENANCE_TYPES]}
+        />
+      )
+    }
+
+    if (columnId === 'priority') {
+      return (
+        <MultiSelectFilter
+          column={column}
+          title="Priority"
+          options={[...PRIORITIES]}
+        />
+      )
+    }
+
+    if (columnId === 'completionStatus') {
+      return (
+        <MultiSelectFilter
+          column={column}
+          title="Completion"
+          options={[...COMPLETION_STATUSES]}
+        />
+      )
+    }
+
+    if (columnId === 'date') {
+      return <DateRangeFilter column={column} />
+    }
+
+    if (columnId === 'hoursSpent') {
+      return (
+        <RangeFilter
+          column={column}
+          min={1}
+          max={24}
+          step={1}
+          title="Hours"
+        />
+      )
     }
 
     return null

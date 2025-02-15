@@ -4,6 +4,7 @@ import { Column } from '@tanstack/react-table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { DualRangeSlider } from '@/components/ui/slider'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,7 +14,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
-import { useState } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { DateRange } from 'react-day-picker'
 
 interface TextFilterProps<TData> {
@@ -114,6 +115,69 @@ export function DateRangeFilter<TData>({ column }: DateRangeFilterProps<TData>) 
           numberOfMonths={2}
           disabled={{ after: new Date() }}
         />
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+interface RangeFilterProps<TData> {
+  column: Column<TData>
+  min: number
+  max: number
+  step: number
+  title: string
+}
+
+export function RangeFilter<TData>({
+  column,
+  min,
+  max,
+  step,
+  title
+}: RangeFilterProps<TData>) {
+  const [range, setRange] = useState<[number, number]>([min, max])
+  const timeoutRef = useRef<NodeJS.Timeout>()
+
+  const updateValue = useCallback((value: [number, number]) => {
+    setRange(value)
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+    timeoutRef.current = setTimeout(() => {
+      column.setFilterValue(value)
+    }, 50) // Small delay to batch rapid updates
+  }, [column])
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    };
+  }, [])
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-start text-left font-normal">
+          {title}: {range[0]} - {range[1]}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span>{range[0]}</span>
+            <span>{range[1]}</span>
+          </div>
+          <DualRangeSlider
+            min={min}
+            max={max}
+            step={step}
+            value={range}
+            onValueChange={updateValue}
+            className="w-full"
+          />
+        </div>
       </PopoverContent>
     </Popover>
   )

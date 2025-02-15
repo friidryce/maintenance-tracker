@@ -74,10 +74,16 @@ export const equipmentColumns: ColumnDef<Equipment>[] = [
 
 export const maintenanceColumns: ColumnDef<MaintenanceRecord>[] = [
   {
-    accessorKey: 'equipment.name',
+    id: 'equipment_name',
     header: 'Equipment',
+    accessorFn: (row: MaintenanceRecord & { equipment?: { name: string } }) => row.equipment?.name,
     sortingFn: 'text',
-    filterFn: 'includesString'
+    filterFn: (row, id, value) => {
+      const equipmentNames = value as string[]
+      if (!equipmentNames?.length) return true
+      const rowValue = row.getValue(id) as string
+      return equipmentNames.includes(rowValue)
+    }
   },
   {
     accessorKey: 'date',
